@@ -1,0 +1,20 @@
+# Build artifacts
+/dist
+/build
+
+# Documentation
+/docs
+
+# Configuration
+webpack.config.js
+
+# Templates
+.github/
+
+# Example files
+example.md
+
+# Tests
+test/
+*.test.js
+*.spec.js

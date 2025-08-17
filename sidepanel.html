@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    :root {
+      --primary-color: #07c160;
+      --primary-hover-color: #06ad56;
+      --border-color: #e0e0e0;
+      --background-color: #f8f8f8;
+      --text-color: #333;
+      --text-secondary-color: #666;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --border-radius: 8px;
+    }
+    
+    body {
+      width: 360px;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      box-sizing: border-box;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .logo {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 10px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text-color);
+    }
+    
+    .description {
+      font-size: 14px;
+      color: var(--text-secondary-color);
+      margin-top: 4px;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+    
+    textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 200px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      padding: 12px;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
+    }
+    
+    textarea::placeholder {
+      color: #aaa;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+      box-shadow: var(--shadow);
+    }
+    
+    .btn:hover {
+      background-color: var(--primary-hover-color);
+    }
+    
+    .btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    
+    .info {
+      font-size: 12px;
+      color: var(--text-secondary-color);
+      margin-top: 16px;
+      text-align: center;
+    }
+    
+    .info p {
+      margin: 4px 0;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0;
+    }
+    
+    .feature-list li {
+      padding: 6px 0;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .feature-list li::before {
+      content: "✓";
+      color: var(--primary-color);
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      font-size: 12px;
+      color: var(--text-secondary-color);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">M</div>
+      <h1>Markdown to WeChat Editor</h1>
+      <div class="description">将 Markdown 文本转换为微信公众号富文本</div>
+    </div>
+    
+    <div class="input-group">
+      <textarea id="markdownInput" placeholder="请输入 Markdown 文本..."></textarea>
+    </div>
+    
+    <button id="convertButton" class="btn">转换并插入</button>
+    
+    <div class="info">
+      <ul class="feature-list">
+        <li>支持标准 Markdown 语法</li>
+        <li>支持 Mermaid 图表渲染</li>
+        <li>支持代码高亮显示</li>
+        <li>一键插入微信公众号编辑器</li>
+      </ul>
+      <p>请确保您已在微信公众号编辑页面</p>
+    </div>
+    
+    <div class="footer">
+      <p>Markdown to WeChat Editor v1.0</p>
+    </div>
+  </div>
+  
+  <script src="sidepanel.js"></script>
+</body>
+</html>

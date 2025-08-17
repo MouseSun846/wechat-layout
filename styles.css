@@ -1,0 +1,13 @@
+/* styles.css */
+
+/* Mermaid 图表样式 */
+.mermaid {
+  text-align: center;
+  margin: 10px 0;
+}
+
+/* 确保 mermaid 图表在微信公众号编辑器中正确显示 */
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
