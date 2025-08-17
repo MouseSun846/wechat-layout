@@ -8,9 +8,35 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 // 监听扩展图标点击事件
-chrome.action.onClicked.addListener((tab) => {
-  // 棣检查是否在微信公众号页面
+chrome.action.onClicked.addListener(async (tab) => {
+  // 检查是否在微信公众号页面
   if (tab.url && tab.url.includes(WECHAT_ORIGIN)) {
+    // 获取当前侧边栏的状态
+    try {
+      const panelOptions = await chrome.sidePanel.getOptions({ tabId: tab.id });
+      if (panelOptions.enabled) {
+        // 如果侧边栏已启用，则关闭它
+        await chrome.sidePanel.setOptions({
+          tabId: tab.id,
+          enabled: false
+        });
+      } else {
+        // 如果侧边栏未启用，则打开它
+        await chrome.sidePanel.setOptions({
+          tabId: tab.id,
+          path: 'sidepanel.html',
+          enabled: true
+        });
+      }
+    } catch (error) {
+      // 如果获取状态失败，直接启用侧边栏
+      await chrome.sidePanel.setOptions({
+        tabId: tab.id,
+        path: 'sidepanel.html',
+        enabled: true
+      });
+    }
+    
     // 向 content script 发送消息，请求注入UI
     chrome.tabs.sendMessage(tab.id, {action: 'injectUI'}, (response) => {
       if (chrome.runtime.lastError) {
