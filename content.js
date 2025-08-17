@@ -212,28 +212,24 @@ function loadMermaid() {
 
 // 将 HTML 插入到微信公众号编辑器中的函数
 function insertHTMLToEditor(html) {
-  // 查找微信公众号编辑器的 iframe
-  const editorIframe = document.getElementById('ueditor_0');
+  // 直接查找文档中的 ProseMirror 元素
+  const proseMirrorElement = document.querySelector('.ProseMirror');
   
-  if (editorIframe && editorIframe.contentDocument) {
-    // 获取 iframe 中的 body 元素
-    const editorBody = editorIframe.contentDocument.body;
+  if (proseMirrorElement) {
+    // 创建一个临时的 div 元素
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
     
-    if (editorBody) {
-      // 创建一个临时的 div 元素
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = html;
-      
-      // 将 HTML 内容逐个插入到编辑器中
-      while (tempDiv.firstChild) {
-        editorBody.appendChild(tempDiv.firstChild);
-      }
-      
-      console.log('HTML inserted to editor successfully');
-    } else {
-      console.error('Could not find editor body');
+    // 清空现有的内容
+    proseMirrorElement.innerHTML = '';
+    
+    // 将 HTML 内容逐个插入到 ProseMirror 元素中
+    while (tempDiv.firstChild) {
+      proseMirrorElement.appendChild(tempDiv.firstChild);
     }
+    
+    console.log('HTML inserted to editor successfully');
   } else {
-    console.error('Could not find editor iframe');
+    console.error('Could not find ProseMirror element');
   }
 }

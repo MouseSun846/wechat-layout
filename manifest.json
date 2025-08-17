@@ -39,7 +39,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["mermaid.min.js", "styles.css", "sidepanel.js"],
+      "resources": ["mermaid.min.js", "styles.css", "sidepanel.js", "node_modules/marked/lib/marked.esm.js"],
       "matches": ["https://mp.weixin.qq.com/*"]
     }
   ]

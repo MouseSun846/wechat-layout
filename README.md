@@ -38,6 +38,29 @@
 - **代码检查**: `npm run lint`
 - **准备发布**: `npm run prepare` (自动运行构建和代码检查)
 
+## 常见问题解决
+
+### marked.js 加载问题
+
+如果在使用插件时遇到 marked.js 加载失败的错误，这通常是因为 `node_modules/marked/lib/marked.esm.js` 文件没有正确配置在 `manifest.json` 的 `web_accessible_resources` 中。
+
+确保 `manifest.json` 文件包含以下配置：
+
+```json
+"web_accessible_resources": [
+  {
+    "resources": ["mermaid.min.js", "styles.css", "sidepanel.js", "node_modules/marked/lib/marked.esm.js"],
+    "matches": ["https://mp.weixin.qq.com/*"]
+  }
+]
+```
+
+如果修改了 `manifest.json` 文件，请重新构建项目：
+
+```bash
+npm run build
+```
+
 ## 技术实现
 
 - 使用 `marked.js` 库进行 Markdown 解析
@@ -227,3 +250,19 @@ Chrome提供了丰富的JavaScript API，让插件能够与浏览器进行深度
 4.  **提交审核**: Google会对你的插件进行审核，以确保其符合政策规定。审核通过后，你的插件就会正式上架。
 
 通过以上步骤，你已经掌握了开发Chrome插件的基本流程和核心知识。建议从一个简单的想法开始，动手实践，并随时查阅 [**Google官方开发文档**](https://developer.chrome.com/docs/extensions/) 以获取更详细的信息和API参考。
+
+## 常见问题解决
+
+### .ProseMirror元素查找问题
+
+在某些情况下，插件可能无法找到微信公众号编辑器中的.ProseMirror元素。这通常是因为页面结构发生了变化。
+
+解决方案：
+
+1. 确保content.js中的insertHTMLToEditor函数使用正确的选择器来查找.ProseMirror元素。
+2. 如果页面结构发生变化，可能需要更新选择器以匹配新的结构。
+3. 重新构建项目以应用更改：
+
+```bash
+npm run build
+```
