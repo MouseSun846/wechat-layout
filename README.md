@@ -1,3 +1,5 @@
+# 公众号
+![光影织梦](images/光影织梦.jpg)
 # Markdown to WeChat Editor
 
 这是一个谷歌浏览器插件，可以将 Markdown 文本转换为微信公众号富文本语法，并支持 Mermaid 图表。
