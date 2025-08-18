@@ -1,5 +1,265 @@
 /* styles.css */
 
+/* Markdown 标题样式 */
+/* 主题色: 深蓝 #2563eb, 紫色 #7c3aed, 青色 #0891b2, 绿色 #059669, 橙色 #ea580c */
+
+/* 使用更具体的选择器以提高优先级，确保在微信公众号编辑器中正确应用样式 */
+.ProseMirror h1,
+h1 {
+  font-size: 2.8em;
+  font-weight: 700;
+  color: #1e293b;
+  border-bottom: 3px solid #2563eb;
+  padding-bottom: 15px;
+  margin-top: 30px;
+  margin-bottom: 25px;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.ProseMirror h2,
+h2 {
+  font-size: 2.2em;
+  font-weight: 700;
+  color: #1e293b;
+  border-left: 5px solid #7c3aed;
+  padding-left: 20px;
+  margin-top: 28px;
+  margin-bottom: 22px;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.ProseMirror h3,
+h3 {
+  font-size: 1.8em;
+  font-weight: 600;
+  color: #0891b2;
+  margin-top: 25px;
+  margin-bottom: 20px;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+}
+
+.ProseMirror h4,
+h4 {
+  font-size: 1.5em;
+  font-weight: 600;
+  color: #059669;
+  margin-top: 22px;
+  margin-bottom: 18px;
+  letter-spacing: -0.1px;
+  line-height: 1.35;
+}
+
+.ProseMirror h5,
+h5 {
+  font-size: 1.3em;
+  font-weight: 600;
+  color: #ea580c;
+  margin-top: 20px;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.ProseMirror h6,
+h6 {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 18px;
+  margin-bottom: 14px;
+  line-height: 1.45;
+}
+
+/* 为微信公众号编辑器定制的标题样式（使用span标签） */
+/* 使用更具体的选择器以提高优先级 */
+.ProseMirror p .heading-level-1 {
+  font-size: 2.8em;
+  font-weight: 700;
+  color: #1e293b;
+  background-color: #dbeafe;
+  border-radius: 12px;
+  padding: 15px 20px;
+  margin-top: 30px;
+  margin-bottom: 25px;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  display: block;
+  width: fit-content;
+  min-width: 200px;
+}
+
+.ProseMirror p .heading-level-2 {
+  font-size: 2.2em;
+  font-weight: 700;
+  color: #1e293b;
+  background-color: #e0e7ff;
+  border-radius: 10px;
+  padding: 12px 18px;
+  margin-top: 28px;
+  margin-bottom: 22px;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+  display: block;
+  width: fit-content;
+  min-width: 180px;
+}
+
+.ProseMirror p .heading-level-3 {
+  font-size: 1.8em;
+  font-weight: 600;
+  color: #0891b2;
+  background-color: #cff9fe;
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-top: 25px;
+  margin-bottom: 20px;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+  display: block;
+  width: fit-content;
+  min-width: 160px;
+}
+
+.ProseMirror p .heading-level-4 {
+  font-size: 1.5em;
+  font-weight: 600;
+  color: #059669;
+  background-color: #dcfce7;
+  border-radius: 7px;
+  padding: 8px 14px;
+  margin-top: 22px;
+  margin-bottom: 18px;
+  letter-spacing: -0.1px;
+  line-height: 1.35;
+  display: block;
+  width: fit-content;
+  min-width: 140px;
+}
+
+.ProseMirror p .heading-level-5 {
+  font-size: 1.3em;
+  font-weight: 600;
+  color: #ea580c;
+  background-color: #ffedd5;
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin-top: 20px;
+  margin-bottom: 16px;
+  line-height: 1.4;
+  display: block;
+  width: fit-content;
+  min-width: 120px;
+}
+
+.ProseMirror p .heading-level-6 {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #64748b;
+  background-color: #e2e8f0;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin-top: 18px;
+  margin-bottom: 14px;
+  line-height: 1.45;
+  display: block;
+  width: fit-content;
+  min-width: 100px;
+}
+
+/* 段落样式 */
+p {
+  font-size: 1.05em;
+  line-height: 1.7;
+  color: #334155;
+  margin-top: 0;
+  margin-bottom: 1.2em;
+  text-align: justify;
+}
+
+/* 链接样式 */
+a {
+  color: #2563eb;
+  text-decoration: none;
+  border-bottom: 1px dashed #94a3b8;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #7c3aed;
+  border-bottom: 1px solid #7c3aed;
+}
+
+/* 引用块样式 */
+blockquote {
+  border-left: 4px solid #2563eb;
+  padding: 10px 20px;
+  margin: 20px 0;
+  background-color: #f1f5f9;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: #475569;
+}
+
+/* 代码块样式 */
+pre {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  padding: 15px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 20px 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+code {
+  font-family: 'Consolas', 'Monaco', monospace;
+  background-color: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.95em;
+}
+
+/* 列表样式 */
+ul, ol {
+  line-height: 1.7;
+  color: #334155;
+  margin-top: 0;
+  margin-bottom: 1.2em;
+  padding-left: 30px;
+}
+
+li {
+  margin-bottom: 8px;
+}
+
+/* 分割线样式 */
+hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #cbd5e1, transparent);
+  margin: 30px 0;
+}
+
+/* Mermaid 图表样式 */
+.mermaid {
+  text-align: center;
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+/* 确保 mermaid 图表在微信公众号编辑器中正确显示 */
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Mermaid 图表样式 */
 .mermaid {
   text-align: center;

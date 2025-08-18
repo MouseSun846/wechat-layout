@@ -3,6 +3,36 @@
 // 用于存储动态导入的marked库
 let marked;
 
+// Escape 函数实现，从 marked.js 源码中提取
+const escapeReplacements = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;'
+};
+
+function escape(html, encode) {
+  const escapeTest = /[&<>'"]/;
+  const escapeReplace = /[&<>'"]/g;
+  const escapeTestNoEncode = /[<>"']|&(?!#?\w+;)/;
+  const escapeReplaceNoEncode = /[<>"']|&(?!#?\w+;)/g;
+  
+  const getEscapeReplacement = (ch) => escapeReplacements[ch];
+  
+  if (encode) {
+    if (escapeTest.test(html)) {
+      return html.replace(escapeReplace, getEscapeReplacement);
+    }
+  } else {
+    if (escapeTestNoEncode.test(html)) {
+      return html.replace(escapeReplaceNoEncode, getEscapeReplacement);
+    }
+  }
+
+  return html;
+}
+
 // 监听来自 popup 或 background 的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Received message:', request);
@@ -138,8 +168,217 @@ async function convertMarkdownToHTML(markdown) {
     }
   }
   
-  // 使用 marked.js 转换 Markdown 为 HTML
-  let html = marked.parse(markdown);
+  // 创建自定义渲染器，将标题转换为span标签
+  const renderer = {
+    // Block level renderers
+    heading({ tokens, depth }) {
+      // 根据标题级别返回不同的span标签和样式
+      const headingStyles = [
+        'font-size: 20px; font-weight: 700; color: #1e293b; background-color: #dbeafe; border-radius: 12px; padding: 15px 20px; margin-top: 30px; margin-bottom: 25px; letter-spacing: -0.5px; line-height: 1.2; display: block; width: fit-content; min-width: 200px; text-align: center;',
+        'font-size: 18px; font-weight: 700; color: #1e293b; background-color: #e0e7ff; border-radius: 10px; padding: 12px 18px; margin-top: 28px; margin-bottom: 22px; letter-spacing: -0.3px; line-height: 1.25; display: block; width: fit-content; min-width: 180px; text-align: center;',
+        'font-size: 16px; font-weight: 600; color: #0891b2; background-color: #cff9fe; border-radius: 8px; padding: 10px 16px; margin-top: 25px; margin-bottom: 20px; letter-spacing: -0.2px; line-height: 1.3; display: block; width: fit-content; min-width: 160px; text-align: center;',
+        'font-size: 15px; font-weight: 600; color: #059669; background-color: #dcfce7; border-radius: 7px; padding: 8px 14px; margin-top: 22px; margin-bottom: 18px; letter-spacing: -0.1px; line-height: 1.35; display: block; width: fit-content; min-width: 140px; text-align: center;',
+        'font-size: 14px; font-weight: 600; color: #ea580c; background-color: #ffedd5; border-radius: 6px; padding: 6px 12px; margin-top: 20px; margin-bottom: 16px; line-height: 1.4; display: block; width: fit-content; min-width: 120px; text-align: center;',
+        'font-size: 13px; font-weight: 600; color: #64748b; background-color: #e2e8f0; border-radius: 5px; padding: 5px 10px; margin-top: 18px; margin-bottom: 14px; line-height: 1.45; display: block; width: fit-content; min-width: 100px; text-align: center;'
+      ];
+      
+      // 使用解析器处理 tokens
+      const text = this.parser.parseInline(tokens);
+      // 修改为符合用户要求的DOM结构，直接在span节点通过style表达样式，防止被编辑器重置
+      return `<p><span leaf=""><span textstyle="" style="${headingStyles[depth-1]}">${text}</span></span></p>`;
+    },
+    paragraph({ tokens }) {
+      const text = this.parser.parseInline(tokens);
+      return `<p>${text}</p>`;
+    },
+    list(token) {
+      const ordered = token.ordered;
+      const start = token.start;
+      
+      let body = '';
+      for (let j = 0; j < token.items.length; j++) {
+        const item = token.items[j];
+        body += this.listitem(item);
+      }
+      
+      const type = ordered ? 'ol' : 'ul';
+      const startAttr = (ordered && start !== 1) ? (` start="${start}"`) : '';
+      return `<${type}${startAttr}>${body}</${type}>`;
+    },
+    listitem(item) {
+      let itemBody = '';
+      if (item.task) {
+        const checkbox = this.checkbox({ checked: !!item.checked });
+        if (item.loose) {
+          if (item.tokens[0]?.type === 'paragraph') {
+            item.tokens[0].text = checkbox + ' ' + item.tokens[0].text;
+            if (item.tokens[0].tokens && item.tokens[0].tokens.length > 0 && item.tokens[0].tokens[0].type === 'text') {
+              item.tokens[0].tokens[0].text = checkbox + ' ' + item.tokens[0].tokens[0].text;
+              item.tokens[0].tokens[0].escaped = true;
+            }
+          } else {
+            item.tokens.unshift({
+              type: 'text',
+              raw: checkbox + ' ',
+              text: checkbox + ' ',
+              escaped: true,
+            });
+          }
+        } else {
+          itemBody += checkbox + ' ';
+        }
+      }
+      
+      itemBody += this.parser.parse(item.tokens, !!item.loose);
+      return `<li>${itemBody}</li>`;
+    },
+    checkbox({ checked }) {
+      return '<input '
+        + (checked ? 'checked="" ' : '')
+        + 'disabled="" type="checkbox">';
+    },
+    code({ text, lang, escaped }) {
+      const langString = (lang || '').match(/\S*/)?.[0];
+      const code = text.replace(/\n$/, '') + '\n';
+      
+      // 检查是否为Mermaid代码块
+      if (langString && langString.toLowerCase() === 'mermaid') {
+        // 对于Mermaid代码块，转换为图片插入
+        return `<div class="mermaid">${code}</div>`;
+      }
+      
+      if (!langString) {
+        // 修改为符合用户要求的DOM结构
+        return '<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang=""><code><span leaf="">'
+          + (escaped ? code : escape(code, true))
+          + '</span></code></pre></section>\n';
+      }
+      
+      // 修改为符合用户要求的DOM结构
+      return '<section class="code-snippet__js"><pre class="code-snippet__js code-snippet code-snippet_nowrap" data-lang="' + escape(langString) + '"><code><span leaf="">'
+        + (escaped ? code : escape(code, true))
+        + '</span></code></pre></section>\n';
+    },
+    blockquote({ tokens }) {
+      const body = this.parser.parse(tokens);
+      // 修改为符合用户要求的DOM结构
+      return `<blockquote><p><span leaf="">${body.replace(/<p>(.*?)<\/p>/g, '$1')}</span></p></blockquote>`;
+    },
+    html({ text }) {
+      return text;
+    },
+    def(token) {
+      return '';
+    },
+    hr(token) {
+      // 修改为符合用户要求的DOM结构
+      return '<hr style="border-style: solid; border-width: 1px 0 0; border-color: rgba(0,0,0,0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5);" contenteditable="false">\n';
+    },
+    // This method was missing and caused the error
+    space(token) {
+      return '';
+    },
+    // Table renderers
+    table(token) {
+      let header = '';
+      
+      // header
+      let cell = '';
+      for (let j = 0; j < token.header.length; j++) {
+        cell += this.tablecell(token.header[j]);
+      }
+      header += this.tablerow({ text: cell });
+      
+      let body = '';
+      for (let j = 0; j < token.rows.length; j++) {
+        const row = token.rows[j];
+        
+        cell = '';
+        for (let k = 0; k < row.length; k++) {
+          cell += this.tablecell(row[k]);
+        }
+        
+        body += this.tablerow({ text: cell });
+      }
+      if (body) body = `<tbody>${body}</tbody>`;
+      
+      return '<table>\n'
+        + '<thead>\n'
+        + header
+        + '</thead>\n'
+        + body
+        + '</table>\n';
+    },
+    tablerow({ text }) {
+      return `<tr>\n${text}</tr>\n`;
+    },
+    tablecell(token) {
+      const content = this.parser.parseInline(token.tokens);
+      const type = token.header ? 'th' : 'td';
+      const tag = token.align
+        ? `<${type} align="${token.align}">`
+        : `<${type}>`;
+      return tag + content + `</${type}>\n`;
+    },
+    // Inline level renderers
+    strong({ tokens }) {
+      const text = this.parser.parseInline(tokens);
+      return `<strong>${text}</strong>`;
+    },
+    em({ tokens }) {
+      const text = this.parser.parseInline(tokens);
+      return `<em>${text}</em>`;
+    },
+    codespan({ text }) {
+      return `<code>${escape(text, true)}</code>`;
+    },
+    br(token) {
+      return '<br>';
+    },
+    del({ tokens }) {
+      const text = this.parser.parseInline(tokens);
+      return `<del>${text}</del>`;
+    },
+    link({ href, title, tokens }) {
+      const text = this.parser.parseInline(tokens);
+      const cleanHref = cleanUrl(href);
+      if (cleanHref === null) {
+        return text;
+      }
+      href = cleanHref;
+      let out = '<a href="' + href + '"';
+      if (title) {
+        out += ' title="' + (escape(title)) + '"';
+      }
+      out += '>' + text + '</a>';
+      return out;
+    },
+    image({ href, title, text, tokens }) {
+      if (tokens) {
+        text = this.parser.parseInline(tokens, this.parser.textRenderer);
+      }
+      const cleanHref = cleanUrl(href);
+      if (cleanHref === null) {
+        return escape(text);
+      }
+      href = cleanHref;
+      
+      let out = `<img src="${href}" alt="${text}"`;
+      if (title) {
+        out += ` title="${escape(title)}"`;
+      }
+      out += '>';
+      return out;
+    },
+    text(token) {
+      return 'tokens' in token && token.tokens
+        ? this.parser.parseInline(token.tokens)
+        : ('escaped' in token && token.escaped ? token.text : escape(token.text));
+    }
+  };
+  
+  // 使用 marked.js 转换 Markdown 为 HTML，并应用自定义渲染器
+  let html = marked.parse(markdown, { renderer });
   
   // 处理 mermaid 图表
   html = await processMermaidCharts(html);
@@ -154,7 +393,8 @@ async function processMermaidCharts(html) {
   tempDiv.innerHTML = html;
   
   // 查找所有包含 mermaid 图表的代码块
-  const mermaidBlocks = tempDiv.querySelectorAll('pre code.language-mermaid');
+  // 支持两种格式：旧的<pre><code class="language-mermaid">和新的<div class="mermaid">
+  const mermaidBlocks = tempDiv.querySelectorAll('pre code.language-mermaid, div.mermaid');
   
   // 如果没有 mermaid 图表，直接返回
   if (mermaidBlocks.length === 0) {
@@ -167,15 +407,33 @@ async function processMermaidCharts(html) {
   // 遍历每个 mermaid 代码块并替换为图表
   mermaidBlocks.forEach((block, index) => {
     // 获取 mermaid 图表定义
-    const mermaidDefinition = block.textContent;
+    let mermaidDefinition = '';
     
-    // 创建一个用于渲染图表的 div
-    const chartDiv = document.createElement('div');
-    chartDiv.className = 'mermaid';
-    chartDiv.textContent = mermaidDefinition;
+    // 根据不同的元素类型获取内容
+    if (block.tagName.toLowerCase() === 'div' && block.classList.contains('mermaid')) {
+      // 新格式：直接从<div class="mermaid">获取内容
+      mermaidDefinition = block.textContent;
+    } else if (block.tagName.toLowerCase() === 'code' && block.classList.contains('language-mermaid')) {
+      // 旧格式：从<pre><code class="language-mermaid">获取内容
+      mermaidDefinition = block.textContent;
+      
+      // 创建一个用于渲染图表的 div
+      const chartDiv = document.createElement('div');
+      chartDiv.className = 'mermaid';
+      chartDiv.textContent = mermaidDefinition;
+      
+      // 替换原来的代码块
+      block.parentElement.replaceWith(chartDiv);
+      return; // 继续下一个元素
+    }
     
-    // 替换原来的代码块
-    block.parentElement.replaceWith(chartDiv);
+    // 确保元素有正确的类名用于渲染
+    if (!block.classList.contains('mermaid')) {
+      block.classList.add('mermaid');
+    }
+    
+    // 更新元素内容
+    block.textContent = mermaidDefinition;
   });
   
   // 使用 Promise 来等待 mermaid 渲染完成
