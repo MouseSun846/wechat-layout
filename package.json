@@ -4,12 +4,12 @@
   "description": "A Chrome extension to convert Markdown text to WeChat public account rich text format with Mermaid chart support",
   "main": "background.js",
   "scripts": {
-    "test": "echo \"Running tests...\"",
-    "build": "webpack --mode production",
+    "build": "webpack --mode production && webpack --config webpack.mermaid.config.js --mode production",
     "dev": "webpack --mode development --watch",
     "start": "http-server . -p 8080",
     "lint": "eslint . --ext .js --config eslint.config.mjs",
-    "prepare": "npm run build && npm run lint"
+    "prepare": "npm run build && npm run lint",
+    "build-mermaid": "webpack --config webpack.mermaid.config.js --mode production"
   },
   "keywords": [
     "chrome-extension",
@@ -32,6 +32,7 @@
     "url": "https://github.com/sponsors/your-username"
   },
   "dependencies": {
+    "canvg": "^4.0.3",
     "marked": "^16.1.2"
   },
   "devDependencies": {

@@ -172,39 +172,71 @@ async function processMermaidCharts(html) {
     // 创建一个用于渲染图表的 div
     const chartDiv = document.createElement('div');
     chartDiv.className = 'mermaid';
-    chartDiv.id = `mermaid-chart-${index}`;
     chartDiv.textContent = mermaidDefinition;
     
     // 替换原来的代码块
     block.parentElement.replaceWith(chartDiv);
   });
   
-  // 渲染 mermaid 图表
-  await mermaid.run({
-    querySelector: '.mermaid'
+  // 使用 Promise 来等待 mermaid 渲染完成
+  return new Promise((resolve, reject) => {
+    const containerId = `mermaid-container-${Date.now()}`;
+    tempDiv.id = containerId;
+    tempDiv.style.display = 'none';
+    document.body.appendChild(tempDiv);
+
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('dist/mermaid_renderer.js');
+    script.dataset.containerId = containerId;
+
+    const messageListener = (event) => {
+      if (event.source === window && event.data.type && event.data.containerId === containerId) {
+        window.removeEventListener('message', messageListener);
+        const renderedContainer = document.getElementById(containerId);
+        if (renderedContainer) {
+          const resultHTML = renderedContainer.innerHTML;
+          renderedContainer.remove();
+          if (event.data.type === 'MERMAID_RENDER_COMPLETE') {
+            resolve(resultHTML);
+          } else if (event.data.type === 'MERMAID_RENDER_ERROR') {
+            // Log more detailed error information
+            console.error('Mermaid rendering failed:', event.data.error);
+            // Try to parse the error for more details
+            let detailedError = event.data.error;
+            if (typeof event.data.error === 'string' && event.data.error.includes('Could not find a suitable point for the given distance')) {
+              console.error('This error is related to Mermaid flowchart curve calculations. Try changing the curve type in mermaid configuration.');
+              console.error('Attempting fallback rendering with linear curve...');
+              // Provide a more user-friendly error message
+              reject(new Error('Mermaid rendering failed due to curve calculation issues. The extension automatically attempted a fallback rendering with a linear curve, but it also failed. Try simplifying your diagram or changing the curve type in mermaid configuration.'));
+            } else {
+              reject(new Error('Mermaid rendering failed: ' + detailedError));
+            }
+          }
+        } else {
+          reject(new Error('Mermaid container not found after rendering.'));
+        }
+      }
+    };
+
+    window.addEventListener('message', messageListener);
+    document.head.appendChild(script);
   });
-  
-  // 返回处理后的 HTML
-  return tempDiv.innerHTML;
 }
 
 // 动态加载 mermaid.js 库
 function loadMermaid() {
   return new Promise((resolve, reject) => {
-    // 检查是否已经加载了 mermaid
-    if (window.mermaid) {
+    const mermaidScriptURL = chrome.runtime.getURL('mermaid.min.js');
+    // 检查 mermaid.js 是否已经被注入
+    if (document.querySelector(`script[src="${mermaidScriptURL}"]`)) {
       resolve();
       return;
     }
     
     // 创建 script 标签加载 mermaid
     const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('mermaid.min.js');
-    script.onload = () => {
-      // 初始化 mermaid
-      mermaid.initialize({ startOnLoad: false });
-      resolve();
-    };
+    script.src = mermaidScriptURL;
+    script.onload = resolve;
     script.onerror = reject;
     document.head.appendChild(script);
   });
@@ -219,6 +251,35 @@ function insertHTMLToEditor(html) {
     // 创建一个临时的 div 元素
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
+    
+    // 处理 mermaid 图表图片
+    const mermaidImages = tempDiv.querySelectorAll('img.mermaid-diagram');
+    mermaidImages.forEach(img => {
+      // 为 mermaid 图片添加微信公众号需要的属性
+      img.setAttribute('class', 'rich_pages wxw-img');
+      img.setAttribute('data-type', 'png');
+      img.setAttribute('type', 'block');
+      img.setAttribute('contenteditable', 'false');
+      
+      // 包装在 section 标签中以匹配微信公众号的格式
+      const section = document.createElement('section');
+      section.style.textAlign = 'center';
+      section.setAttribute('nodeleaf', '');
+      section.appendChild(img.cloneNode(true));
+      
+      // 添加 ProseMirror 分隔符和换行符
+      const separator = document.createElement('img');
+      separator.className = 'ProseMirror-separator';
+      separator.alt = '';
+      section.appendChild(separator);
+      
+      const br = document.createElement('br');
+      br.className = 'ProseMirror-trailingBreak';
+      section.appendChild(br);
+      
+      // 替换原始图片
+      img.replaceWith(section);
+    });
     
     // 清空现有的内容
     proseMirrorElement.innerHTML = '';

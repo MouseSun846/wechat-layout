@@ -13,8 +13,3 @@ webpack.config.js
 
 # Example files
 example.md
-
-# Tests
-test/
-*.test.js
-*.spec.js
