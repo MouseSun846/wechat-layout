@@ -169,23 +169,43 @@ async function convertMarkdownToHTML(markdown) {
   }
   
   // 创建自定义渲染器，将标题转换为span标签
+  // 初始化标题计数器
+  let headingCounters = [0, 0]; // [一级标题计数器, 二级标题计数器]
+  
   const renderer = {
     // Block level renderers
     heading({ tokens, depth }) {
       // 根据标题级别返回不同的span标签和样式
-      const headingStyles = [
-        'font-size: 20px; font-weight: 700; color: #1e293b; background-color: #dbeafe; border-radius: 12px; padding: 15px 20px; margin-top: 30px; margin-bottom: 25px; letter-spacing: -0.5px; line-height: 1.2; display: block; width: fit-content; min-width: 200px; text-align: center;',
-        'font-size: 18px; font-weight: 700; color: #1e293b; background-color: #e0e7ff; border-radius: 10px; padding: 12px 18px; margin-top: 28px; margin-bottom: 22px; letter-spacing: -0.3px; line-height: 1.25; display: block; width: fit-content; min-width: 180px; text-align: center;',
-        'font-size: 16px; font-weight: 600; color: #0891b2; background-color: #cff9fe; border-radius: 8px; padding: 10px 16px; margin-top: 25px; margin-bottom: 20px; letter-spacing: -0.2px; line-height: 1.3; display: block; width: fit-content; min-width: 160px; text-align: center;',
-        'font-size: 15px; font-weight: 600; color: #059669; background-color: #dcfce7; border-radius: 7px; padding: 8px 14px; margin-top: 22px; margin-bottom: 18px; letter-spacing: -0.1px; line-height: 1.35; display: block; width: fit-content; min-width: 140px; text-align: center;',
-        'font-size: 14px; font-weight: 600; color: #ea580c; background-color: #ffedd5; border-radius: 6px; padding: 6px 12px; margin-top: 20px; margin-bottom: 16px; line-height: 1.4; display: block; width: fit-content; min-width: 120px; text-align: center;',
-        'font-size: 13px; font-weight: 600; color: #64748b; background-color: #e2e8f0; border-radius: 5px; padding: 5px 10px; margin-top: 18px; margin-bottom: 14px; line-height: 1.45; display: block; width: fit-content; min-width: 100px; text-align: center;'
-      ];
+      console.log('tokens',tokens, ' depth:', depth);
+      // 更新标题计数器并生成序号
+      let headingNumber = '';
+      if (depth === 3) {
+        // 重置二级标题计数器
+        headingCounters[1] = 0;
+        // 增加一级标题计数器
+        headingCounters[0]++;
+        headingNumber = `${headingCounters[0]}`;
+      } else if (depth === 4) {
+        // 增加二级标题计数器
+        headingCounters[1]++;
+        // 如果一级标题计数器为0，直接显示二级标题计数器
+        headingNumber = headingCounters[0] === 0 ? `${headingCounters[1]}` : `${headingCounters[0]}.${headingCounters[1]}`;
+      }
       
       // 使用解析器处理 tokens
-      const text = this.parser.parseInline(tokens);
-      // 修改为符合用户要求的DOM结构，直接在span节点通过style表达样式，防止被编辑器重置
-      return `<p><span leaf=""><span textstyle="" style="${headingStyles[depth-1]}">${text}</span></span></p>`;
+      const text = (headingNumber?(headingNumber+'、 '):'')+this.parser.parseInline(tokens);
+
+      
+      return `
+        <section data-mpa-md-key="heading-${depth}" style="margin-bottom: 16px; margin-top: 16px; font-family: Optima-Regular, PingFangTC-light;" data-mpa-ai-typesetting-template="60007">
+          <section style="width: 100%;display: flex;flex-direction: column;">
+            <section style="align-self: center;background: #004080;transform: skewX(-7deg);padding: 4px 16px 3px 16px;margin: 0 0 26px 0;" data-mid="">
+              <section style="transform: skewX(7deg);">
+                <section data-mpa-md-content="t" style="font-weight: bold; font-size: 18px; color: rgb(255, 255, 255); line-height: 25px; word-break: break-word; font-family: Optima-Regular, PingFangTC-light;" data-mpa-md-action-id="$id">${text}</section>
+              </section>
+            </section>
+          </section>
+        </section>`;
     },
     paragraph({ tokens }) {
       const text = this.parser.parseInline(tokens);
@@ -346,11 +366,8 @@ async function convertMarkdownToHTML(markdown) {
         return text;
       }
       href = cleanHref;
-      let out = '<a href="' + href + '"';
-      if (title) {
-        out += ' title="' + (escape(title)) + '"';
-      }
-      out += '>' + text + '</a>';
+      // 使用 blockquote 标签渲染链接
+      let out = '<blockquote><p><span leaf="">' + text + ': ' + href + '</span></p></blockquote>';
       return out;
     },
     image({ href, title, text, tokens }) {
@@ -376,6 +393,22 @@ async function convertMarkdownToHTML(markdown) {
         : ('escaped' in token && token.escaped ? token.text : escape(token.text));
     }
   };
+  
+  // 清理 URL 的函数
+  function cleanUrl(url) {
+    try {
+      // 如果 URL 无效或为空，返回 null
+      if (!url || url.trim() === '') {
+        return null;
+      }
+      // 创建一个 URL 对象来验证和清理 URL
+      const cleanedUrl = new URL(url, 'http://example.com');
+      return cleanedUrl.href;
+    } catch (error) {
+      // 如果 URL 无效，返回 null
+      return null;
+    }
+  }
   
   // 使用 marked.js 转换 Markdown 为 HTML，并应用自定义渲染器
   let html = marked.parse(markdown, { renderer });

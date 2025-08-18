@@ -34,6 +34,26 @@
     .header {
       text-align: center;
       margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .official-account {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .official-account-name {
+      font-size: 14px;
+      color: var(--text-secondary-color);
+    }
+    
+    .official-account-qrcode {
+      width: 128px;
+      height: 128px;
     }
     
     .logo {
@@ -160,9 +180,12 @@
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">M</div>
       <h1>Markdown to WeChat Editor</h1>
       <div class="description">将 Markdown 文本转换为微信公众号富文本</div>
+      <div class="official-account">
+        <span class="official-account-name">光影织梦</span>
+        <img class="official-account-qrcode" src="images/光影织梦.jpg" alt="光影织梦二维码">
+      </div>
     </div>
     
     <div class="input-group">
