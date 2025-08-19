@@ -282,7 +282,7 @@ async function convertMarkdownToHTML(markdown) {
     blockquote({ tokens }) {
       const body = this.parser.parse(tokens);
       // 修改为符合用户要求的DOM结构
-      return `<blockquote><p><span leaf="">${body.replace(/<p>(.*?)<\/p>/g, '$1')}</span></p></blockquote>`;
+      return `<blockquote style="font-style: normal; padding: 1em; border-left: 4px solid rgb(0, 179, 138); border-radius: 6px; color: rgba(0,0,0,0.5); background: var(--blockquote-background); margin: 0 0 1em 0;"><p><span leaf="">${body.replace(/<p>(.*?)<\/p>/g, '$1')}</span></p></blockquote>`;
     },
     html({ text }) {
       return text;
@@ -367,7 +367,7 @@ async function convertMarkdownToHTML(markdown) {
       }
       href = cleanHref;
       // 使用 blockquote 标签渲染链接
-      let out = '<blockquote><p><span leaf="">' + text + ': ' + href + '</span></p></blockquote>';
+      let out = '<blockquote style="font-style: normal; padding: 1em; border-left: 4px solid rgb(0, 179, 138); border-radius: 6px; color: rgba(0,0,0,0.5); background: var(--blockquote-background); margin: 0 0 1em 0;"><p><span leaf="">' + text + ': ' + href + '</span></p></blockquote>';
       return out;
     },
     image({ href, title, text, tokens }) {
