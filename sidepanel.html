@@ -34,14 +34,19 @@
     .header {
       text-align: center;
       margin-bottom: 20px;
-      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header-content {
+      flex: 1;
+      text-align: left;
     }
     
     .official-account {
-      position: absolute;
-      top: 0;
-      right: 0;
       display: flex;
+      flex-direction: column;
       align-items: center;
       gap: 8px;
     }
@@ -52,8 +57,8 @@
     }
     
     .official-account-qrcode {
-      width: 128px;
-      height: 128px;
+      width: 64px;
+      height: 64px;
     }
     
     .logo {
@@ -180,10 +185,12 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>Markdown to WeChat Editor</h1>
-      <div class="description">将 Markdown 文本转换为微信公众号富文本</div>
+      <div class="header-content">
+        <h2>Markdown to WeChat Editor</h2>
+        <div class="description">将 Markdown 文本转换为微信公众号富文本</div>
+      </div>
       <div class="official-account">
-        <span class="official-account-name">光影织梦</span>
+        <span class="official-account-name">公众号@光影织梦</span>
         <img class="official-account-qrcode" src="images/光影织梦.jpg" alt="光影织梦二维码">
       </div>
     </div>
