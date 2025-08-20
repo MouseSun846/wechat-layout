@@ -43,7 +43,7 @@
         "mermaid.min.js",
         "styles.css",
         "sidepanel.js",
-        "node_modules/marked/lib/marked.esm.js",
+        "node_modules/marked/marked.min.js",
         "dist/mermaid_renderer.js"
       ],
       "matches": ["https://mp.weixin.qq.com/*"]
