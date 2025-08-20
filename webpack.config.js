@@ -15,11 +15,23 @@ module.exports = {
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader']
+      },
+      {
+        test: /FuriganaMD\.js$/,
+        use: 'babel-loader'
+      },
+      {
+        test: /\.js$/,
+        use: 'babel-loader',
+        exclude: /node_modules/
       }
     ]
   },
   resolve: {
     extensions: ['.js', '.css'],
-    modules: ['node_modules']
+    modules: ['node_modules'],
+    alias: {
+      'md2wechat': path.resolve(__dirname, '../md2wechat/src/assets/scripts/md2wechat.js')
+    }
   }
 };

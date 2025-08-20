@@ -23,13 +23,13 @@
   "content_scripts": [
     {
       "matches": ["https://mp.weixin.qq.com/**"],
-      "js": ["content.js"],
+      "js": ["dist/content.js"],
       "css": ["styles.css"],
       "type": "module"
     }
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "dist/background.js"
   },
   "action": {
     "default_title": "Markdown to WeChat Editor"
@@ -42,7 +42,7 @@
       "resources": [
         "mermaid.min.js",
         "styles.css",
-        "sidepanel.js",
+        "dist/sidepanel.js",
         "node_modules/marked/marked.min.js",
         "dist/mermaid_renderer.js"
       ],
