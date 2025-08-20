@@ -44,7 +44,8 @@
         "styles.css",
         "dist/sidepanel.js",
         "node_modules/marked/marked.min.js",
-        "dist/mermaid_renderer.js"
+        "dist/mermaid_renderer.js",
+        "dist/inline-css.js"
       ],
       "matches": ["https://mp.weixin.qq.com/*"]
     }

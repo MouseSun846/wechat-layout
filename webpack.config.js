@@ -4,7 +4,8 @@ module.exports = {
   entry: {
     content: './content.js',
     background: './background.js',
-    sidepanel: './sidepanel.js'
+    sidepanel: './sidepanel.js',
+    'inline-css': '../md2wechat/src/assets/scripts/inline-css.js'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

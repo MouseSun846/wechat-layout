@@ -2,9 +2,8 @@
 
 
 // 导入 md2wechat 包
-import { renderWeChat, WxRenderer } from 'md2wechat';
+import { renderWeChat, WxRenderer, inlineCss } from 'md2wechat';
 // 直接导入 marked 库以确保它被包含在 bundle 中
-import { marked } from 'marked';
 
 
 
@@ -48,6 +47,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // 转换 Markdown 为 HTML 的函数
 async function convertMarkdownToHTML(markdown, theme, font) {
+  console.log(theme, font);
+
 
   const wxRenderer = new WxRenderer();
   // 使用 md2wechat 包中的 renderWeChat 方法解析 Markdown
@@ -59,7 +60,14 @@ async function convertMarkdownToHTML(markdown, theme, font) {
   // Wrap the output in a section with the selected theme and font
   const themedOutput = `<section class="themes ${theme} ${font}">${output}</section>`;
   
-  const finalHtml = await inlineCss(themedOutput);
+
+  // Ensure themesCssContent is properly loaded
+  if (!themesCssContent) {
+    console.error('themesCssContent is not loaded');
+    return themedOutput; // Return without inlining CSS if themesCssContent is missing
+  }
+
+  const finalHtml = await inlineCss(themedOutput, themesCssContent);
 
   return finalHtml;
 }
@@ -2243,78 +2251,6 @@ const themesCssContent = `
   font-family: Optima-Regular, Optima, PingFangSC-light, PingFangTC-light, "PingFang SC", Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
 }
 `;
-
-// A simplified CSS parser and inliner
-async function inlineCss(html) {
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = html;
-
-  // Parse CSS rules into a map for easier lookup
-  const styleMap = new Map();
-  const ruleRegex = /\.themes(\.[a-zA-Z0-9_-]+)?(\s[a-zA-Z0-9_-]+)?(\s[a-zA-Z0-9_-]+)?\s*\{([^}]+)\}/g;
-  let match;
-  while ((match = ruleRegex.exec(themesCssContent)) !== null) {
-    const fullSelector = match[0].substring(0, match[0].indexOf('{')).trim();
-    const declarations = match[4].trim();
-    styleMap.set(fullSelector, declarations);
-  }
-
-  // Function to apply styles
-  function applyStyles(element, styles) {
-    const currentStyle = element.getAttribute('style') || '';
-    element.setAttribute('style', currentStyle + styles);
-  }
-
-  // Get the main .themes element and its classes
-  const themesElement = tempDiv.querySelector('.themes');
-  const activeThemeClass = Array.from(themesElement.classList).find(cls => cls !== 'themes' && !cls.startsWith('fonts-'));
-  const activeFontClass = Array.from(themesElement.classList).find(cls => cls.startsWith('fonts-'));
-
-  // Apply general .themes styles
-  if (styleMap.has('.themes')) {
-    applyStyles(themesElement, styleMap.get('.themes'));
-  }
-
-  // Iterate through all elements and apply relevant styles
-  const allElements = tempDiv.querySelectorAll('*');
-  allElements.forEach(element => {
-    let elementStyles = '';
-
-    // Apply styles based on tag name (e.g., p, h1)
-    const tagName = element.tagName.toLowerCase();
-    if (styleMap.has(`.themes ${tagName}`)) {
-      elementStyles += styleMap.get(`.themes ${tagName}`);
-    }
-
-    // Apply theme-specific styles (e.g., .themes.chengxin p)
-    if (activeThemeClass) {
-      if (styleMap.has(`.themes.${activeThemeClass} ${tagName}`)) {
-        elementStyles += styleMap.get(`.themes.${activeThemeClass} ${tagName}`);
-      }
-      // Handle nested selectors like .themes.chengxin h1 .content
-      element.classList.forEach(cls => {
-        if (styleMap.has(`.themes.${activeThemeClass} ${tagName} .${cls}`)) {
-          elementStyles += styleMap.get(`.themes.${activeThemeClass} ${tagName} .${cls}`);
-        }
-        if (styleMap.has(`.themes.${activeThemeClass} .${cls}`)) {
-          elementStyles += styleMap.get(`.themes.${activeThemeClass} .${cls}`);
-        }
-      });
-    }
-
-    // Apply font-specific styles
-    if (activeFontClass && styleMap.has(`.themes.${activeFontClass}`)) {
-      elementStyles += styleMap.get(`.themes.${activeFontClass}`);
-    }
-
-    if (elementStyles) {
-      applyStyles(element, elementStyles);
-    }
-  });
-
-  return tempDiv.innerHTML;
-}
-
 
 // 将 HTML 插入到微信公众号编辑器中的函数
 function insertHTMLToEditor(html) {
