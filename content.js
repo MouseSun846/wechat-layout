@@ -2,7 +2,7 @@
 
 
 // 导入 md2wechat 包
-import { renderWeChat, WxRenderer, inlineCss } from 'md2wechat';
+import { renderWeChat, inlineCss } from 'md2wechat';
 // 直接导入 marked 库以确保它被包含在 bundle 中
 
 
@@ -50,9 +50,9 @@ async function convertMarkdownToHTML(markdown, theme, font) {
   console.log(theme, font);
 
 
-  const wxRenderer = new WxRenderer();
+
   // 使用 md2wechat 包中的 renderWeChat 方法解析 Markdown
-  let output = renderWeChat(markdown, wxRenderer);
+  let output = renderWeChat(markdown);
 
   // 处理 mermaid 图表
   output = await processMermaidCharts(output);
