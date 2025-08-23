@@ -1,8 +1,109 @@
+// Generate random visitor ID
+function generateRandomVisitorId() {
+  return 'visitor-' + Math.random().toString(36).substr(2, 9);
+}
+
+// Get visitor ID
+async function getVisitorId() {
+  // Check if visitor ID exists in localStorage
+  let visitorId = localStorage.getItem('visitorId');
+  
+  return visitorId;
+}
+
+// Generate and save visitor ID
+function generateAndSaveVisitorId() {
+  let visitorId = localStorage.getItem('visitorId');
+  
+  // If not exists, generate a new one and save it
+  if (!visitorId) {
+    visitorId = generateRandomVisitorId();
+    localStorage.setItem('visitorId', visitorId);
+  }
+  
+  return visitorId;
+}
+
+// Check if user is verified
+function isUserVerified(visitorId) {
+  const verifiedUsers = JSON.parse(localStorage.getItem('verifiedUsers') || '[]');
+  return verifiedUsers.includes(visitorId);
+}
+
+// Add user to verified list
+function addUserToVerifiedList(visitorId) {
+  const verifiedUsers = JSON.parse(localStorage.getItem('verifiedUsers') || '[]');
+  if (!verifiedUsers.includes(visitorId)) {
+    verifiedUsers.push(visitorId);
+    localStorage.setItem('verifiedUsers', JSON.stringify(verifiedUsers));
+  }
+}
+
+// Show subscription modal
+function showSubscriptionModal() {
+  const modal = document.getElementById('subscriptionModal');
+  modal.style.display = 'block';
+  
+  // Clear passcode input
+  const passcodeInput = document.getElementById('passcodeInput');
+  if (passcodeInput) {
+    passcodeInput.value = '';
+  }
+}
+
+// Hide subscription modal
+function hideSubscriptionModal() {
+  const modal = document.getElementById('subscriptionModal');
+  modal.style.display = 'none';
+}
+
+// Verify passcode
+async function verifyPasscode(visitorId, passcode) {
+  const options = {
+    method: 'POST',
+    headers: {
+      Accept: '*/*',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'User-Agent': 'PostmanRuntime-ApipostRuntime/1.1.0',
+      Connection: 'keep-alive',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ passcode })
+  };
+
+  try {
+    const response = await fetch('https://lgy-in-dev.cnbita.com/dxjewkl7l-d7fe-2559-ab62-c3b95a066a82/api/passcode/verify', options);
+    const result = await response.json();
+    
+    if (result.code === 200 && result.data && result.data.valid) {
+      // Verification successful
+      // Generate and save visitor ID
+      const newVisitorId = generateAndSaveVisitorId();
+      addUserToVerifiedList(newVisitorId);
+      hideSubscriptionModal();
+      return true;
+    } else {
+      // Verification failed
+      alert(result.message || result.data?.message || '口令验证失败');
+      return false;
+    }
+  } catch (err) {
+    console.error(err);
+    alert('验证过程中出现错误，请重试');
+    return false;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const markdownInput = document.getElementById('markdownInput');
   const convertButton = document.getElementById('convertButton');
   const themeSelect = document.getElementById('theme-select');
   const fontSelect = document.getElementById('font-select');
+  const subscriptionModal = document.getElementById('subscriptionModal');
+  const passcodeInput = document.getElementById('passcodeInput');
+  const verifyPasscodeButton = document.getElementById('verifyPasscode');
+  const cancelVerificationButton = document.getElementById('cancelVerification');
+  const modalClose = document.querySelector('.modal-close');
 
   const themes = [
     { label: '默认主题', value: 'default' },
@@ -37,22 +138,57 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   // Populate theme options
-  themes.forEach(theme => {
-    const option = document.createElement('option');
-    option.value = theme.value;
-    option.textContent = theme.label;
-    themeSelect.appendChild(option);
-  });
+  setTimeout(() => {
+    console.log('Populating theme options');
+    themes.forEach(theme => {
+      const option = document.createElement('option');
+      option.value = theme.value;
+      option.textContent = theme.label;
+      themeSelect.appendChild(option);
+    });
+    console.log('Theme options populated');
+  }, 100);
 
   // Populate font options
-  fonts.forEach(font => {
-    const option = document.createElement('option');
-    option.value = font.value;
-    option.textContent = font.label;
-    fontSelect.appendChild(option);
-  });
+  setTimeout(() => {
+    console.log('Populating font options');
+    fonts.forEach(font => {
+      const option = document.createElement('option');
+      option.value = font.value;
+      option.textContent = font.label;
+      fontSelect.appendChild(option);
+    });
+    console.log('Font options populated');
+  }, 100);
 
-  convertButton.addEventListener('click', () => {
+  // Handle convert button click
+  convertButton.addEventListener('click', async () => {
+    // Get visitor ID with timeout
+    let visitorId;
+    try {
+      visitorId = await Promise.race([
+        getVisitorId(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('获取用户ID超时')), 5000)
+        )
+      ]);
+
+    } catch (error) {
+      console.error('获取用户ID失败:', error);
+      alert('获取用户身份信息失败，请检查网络连接后重试');
+      convertButton.disabled = false;
+      convertButton.textContent = '转换并插入';
+      return;
+    }
+    
+    // Check if user is already verified
+    if (!visitorId) {
+      // Show subscription modal
+      showSubscriptionModal();
+      return;
+    }
+    
+    // User is verified, proceed with conversion
     const markdownText = markdownInput.value;
     const selectedTheme = themeSelect.value;
     const selectedFont = fontSelect.value;
@@ -102,5 +238,46 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('找不到活动标签页');
       }
     });
+  });
+  
+  // Handle passcode verification
+  verifyPasscodeButton.addEventListener('click', async () => {
+    const passcode = passcodeInput.value.trim();
+    if (!passcode) {
+      alert('请输入口令');
+      return;
+    }
+    
+    // Get visitor ID
+    let visitorId = await getVisitorId();
+    
+    // If visitorId is null or undefined, generate a temporary one for verification
+    if (!visitorId) {
+      visitorId = generateRandomVisitorId();
+    }
+    
+    // Verify passcode
+    const isVerified = await verifyPasscode(visitorId, passcode);
+    if (isVerified) {
+      // Proceed with conversion
+      convertButton.click();
+    }
+  });
+  
+  // Handle cancel verification
+  cancelVerificationButton.addEventListener('click', () => {
+    hideSubscriptionModal();
+  });
+  
+  // Handle modal close
+  modalClose.addEventListener('click', () => {
+    hideSubscriptionModal();
+  });
+  
+  // Handle click outside modal to close
+  window.addEventListener('click', (event) => {
+    if (event.target === subscriptionModal) {
+      hideSubscriptionModal();
+    }
   });
 });

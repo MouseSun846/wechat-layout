@@ -209,6 +209,82 @@
       font-size: 12px;
       color: var(--text-secondary-color);
     }
+    
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+      background-color: white;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    
+    .modal-qrcode {
+      width: 200px;
+      height: 200px;
+      margin: 10px auto;
+    }
+    
+    .modal-input {
+      width: 100%;
+      padding: 10px;
+      margin: 15px 0;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      box-sizing: border-box;
+    }
+    
+    .modal-button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+    
+    .modal-button:hover {
+      background-color: var(--primary-hover-color);
+    }
+    
+    .modal-button.cancel {
+      background-color: #cccccc;
+    }
+    
+    .modal-button.cancel:hover {
+      background-color: #bbbbbb;
+    }
+    
+    .modal-close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+    }
+    
+    .modal-close:hover {
+      color: black;
+    }
   </style>
 </head>
 <body>
@@ -253,6 +329,20 @@
     
     <div class="footer">
       <p>Markdown to WeChat Editor v1.0</p>
+    </div>
+  </div>
+  
+  <!-- Modal for subscription verification -->
+  <div id="subscriptionModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <h3>关注公众号</h3>
+      <p>请关注《光影织梦》公众号</p>
+      <img class="modal-qrcode" src="images/光影织梦.jpg" alt="光影织梦二维码">
+      <p>发送“公众号排版”获取口令</p>
+      <input type="text" id="passcodeInput" class="modal-input" placeholder="请输入口令">
+      <button id="verifyPasscode" class="modal-button">验证口令</button>
+      <button id="cancelVerification" class="modal-button cancel">取消</button>
     </div>
   </div>
   

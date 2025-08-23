@@ -32,6 +32,7 @@
     "url": "https://github.com/sponsors/your-username"
   },
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^4.6.2",
     "canvg": "^4.0.3",
     "marked": "^0.7.0",
     "md2wechat": "file:../md2wechat"
