@@ -2,11 +2,11 @@
 node_modules/
 
 # Build artifacts
-/dist
+
 /build
 
 # Additional build output
-dist/
+
 
 # Log files
 *.log

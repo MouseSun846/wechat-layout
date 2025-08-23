@@ -1,0 +1,9 @@
+/*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */
+
+/**
+ * Returns an array of the selectors.
+ *
+ * @license Sizzle CSS Selector Engine - MIT
+ * @param {String} selectorText from mensch
+ * @api public
+ */
